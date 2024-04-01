@@ -54,7 +54,7 @@ public class HiveItemHandler implements IItemHandler {
 
     @Override
     public ItemStack extractItem(int slot, int amount, boolean simulate) {
-        if(slot != 0) return ItemStack.EMPTY;
+        if(slot != 0 || amount == 0) return ItemStack.EMPTY;
 
         if(!readyToExtract()) return ItemStack.EMPTY;
 

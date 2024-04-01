@@ -4,7 +4,7 @@ dependencyResolutionManagement {
                 .versionRef("neoforge")
 
         version("minecraft", "1.20.4")
-        version("neoforge", "20.4.214")
+        version("neoforge", "20.4.216")
     }
 
     versionCatalogs.create("mods") {
