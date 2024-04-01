@@ -44,8 +44,8 @@ jobs:
           GQL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           owner: compactmods
-          repo: compactmachines
-          group: dev.compactmods.compactmachines.compactmachines-neoforge
+          repo: simplehoney
+          group: dev.compactmods.simplehoney.simplehoney-neoforge
           filter: "^simplehoney-neoforge-(?:[\\d\\.]+)-nightly.jar$"
           outputFile: simplehoney-nightly.json
 
