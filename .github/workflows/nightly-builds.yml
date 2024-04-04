@@ -10,6 +10,8 @@ on:
       - "README.md"
       - "LICENSE"
       - ".github/**/*"
+      - "**/*.gradle.kts"
+      - "**/gradle.properties"
 
 jobs:
   vars:
