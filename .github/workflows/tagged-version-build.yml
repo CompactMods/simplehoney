@@ -1,0 +1,73 @@
+# Creates releases on Curseforge and Github Releases based on v* tags
+name: Tagged Version Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  vars:
+    name: Gather Variables
+    uses: ./.github/workflows/variables-release.yml 
+    secrets: inherit
+
+  datagen:
+    name: Build
+    needs: [vars]
+    uses: ./.github/workflows/datagen.yml
+    secrets: inherit
+    with:
+      version: ${{ needs.vars.outputs.modVersion }}
+
+  publish:
+    needs: [vars]
+    uses: ./.github/workflows/publish.yml
+    secrets: inherit
+    with:
+      version: ${{ needs.vars.outputs.modVersion }}
+
+  release-gh:
+    name: Make Github Release
+    runs-on: ubuntu-20.04
+    needs: [vars, publish]
+    steps:
+      - name: Download Build Results
+        uses: actions/download-artifact@v4
+        with:
+          name: libs
+          path: build-out
+
+      - name: Create GitHub Release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          title: "Release ${{ needs.vars.outputs.modVersion }}"
+          automatic_release_tag: "${{ needs.vars.outputs.modVersion }}"
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          files: |
+            build/libs/simplehoney-neoforge-${{ needs.vars.outputs.modVersion }}.jar
+#            build/libs/${{ needs.vars.outputs.mod_id }}-${{ needs.vars.outputs.version }}-api.jar
+
+  release-cf:
+    name: Make Curseforge Release
+    runs-on: ubuntu-20.04
+    needs: [vars, publish]
+    steps:
+      - name: Download Build Results
+        uses: actions/download-artifact@v4
+        with:
+          name: libs
+          path: build-out
+
+      - name: Full File
+        id: filename
+        run: echo "::set-output name=fullpath::build-out/simplehoney-neoforge-${{ needs.vars.outputs.modVersion }}.jar"
+
+      - name: Create CurseForge Release
+        uses: itsmeow/curseforge-upload@master
+        with:
+          token: ${{ secrets.CURSEFORGE_TOKEN }}
+          project_id: ${{ secrets.CF_PROJECT_ID }}
+          game_endpoint: minecraft
+          file_path: ${{ steps.filename.outputs.fullpath }}
+          game_versions: java:Java 17,NeoForge
+          release_type: beta

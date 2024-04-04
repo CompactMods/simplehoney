@@ -1,0 +1,59 @@
+name: Release Variables
+
+on:
+    workflow_call:
+      outputs:
+        mcVersion:
+          description: "Minecraft Version"
+          value: ${{ jobs.vars.outputs.mcVersion }}
+        neoVersion:
+          description: "Neoforge Version"
+          value: ${{ jobs.vars.outputs.neoVersion }}
+        modVersion:
+          description: "Mod Version"
+          value: ${{ jobs.vars.outputs.modVersion }}
+
+jobs:
+  vars:
+      name: Get Variables
+      runs-on: ubuntu-latest
+      outputs:
+        mcVersion: ${{steps.minecraft.outputs.version}}
+        neoVersion: ${{steps.neoforge.outputs.version}}
+        modVersion: ${{steps.version.outputs.version}}
+  
+      steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 150
+          fetch-tags: true
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+  
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Version
+        id: version
+        uses: paulhatch/semantic-version@v5.4.0
+        with:
+          change_path: "neoforge"
+          version_format: "${major}.${minor}.${patch}"
+          search_commit_body: true
+
+      - name: MC Version
+        id: minecraft
+        run: ./gradlew mcVersion -q >> "$GITHUB_OUTPUT"
+        env: 
+          VERSION: ${{ steps.version.outputs.version }}
+
+      - name: NeoForge Version
+        id: neoforge
+        run: ./gradlew neoVersion -q >> "$GITHUB_OUTPUT"
+        env: 
+          VERSION: ${{ steps.version.outputs.version }}

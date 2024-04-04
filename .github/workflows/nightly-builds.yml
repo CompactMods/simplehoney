@@ -1,4 +1,4 @@
-name: Gradle Tests and Nightly (CI)
+name: Publish and Announce Nightly Build
 
 env:
   GH_PKG_URL: "https://maven.pkg.github.com/${{ github.repository }}"
@@ -25,7 +25,6 @@ jobs:
           fetch-depth: 150
           fetch-tags: true
           submodules: true
-
       - name: Version
         id: version
         uses: paulhatch/semantic-version@v5.4.0
@@ -35,71 +34,21 @@ jobs:
           search_commit_body: true
 
   datagen:
-    name: Data Generators
-    runs-on: ubuntu-22.04
-    needs: [ vars ]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: true
+    needs: [vars]
+    uses: ./.github/workflows/datagen.yml
+    secrets: inherit
+    with:
+      version: ${{ needs.vars.outputs.version }}
 
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-
-      - name: Data Generation
-        run: ./gradlew :neoforge:runData
-        env:
-          GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Store Built Assets
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: generated-data
-          path: neoforge/src/generated/resources
-
-  publish-gh-package:
-    name: Publish Github Package - Nightly
-    runs-on: ubuntu-22.04
-    needs: [ vars, datagen ]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-
-      - name: Pull Built Generated Data
-        uses: actions/download-artifact@v4
-        with:
-          name: generated-data
-          path: neoforge/src/generated/resources
-
-      - name: Publish
-        run: ./gradlew :neoforge:publish
-        env:
-          VERSION: ${{ needs.vars.outputs.version }}
-          GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  publish:
+    needs: [vars, datagen]
+    uses: ./.github/workflows/publish.yml
+    secrets: inherit
+    with:
+      version: ${{ needs.vars.outputs.version }}
 
   announce:
     name: Discord Announcement
-    needs: [ publish-gh-package ]
+    needs: [ publish ]
     uses: ./.github/workflows/announce-latest-nightly.yml
     secrets: inherit

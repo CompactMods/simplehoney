@@ -160,7 +160,7 @@ tasks.withType<Jar> {
                 "Specification-Vendor" to "CompactMods",
                 "Specification-Version" to "2",
                 "Implementation-Title" to "Simple Honey",
-                "Implementation-Version" to archiveVersion,
+                "Implementation-Version" to envVersion,
                 "Implementation-Vendor" to "CompactMods",
                 "Implementation-Timestamp" to now,
                 "Minecraft-Version" to libraries.versions.minecraft.get(),
@@ -187,7 +187,7 @@ tasks.withType<ProcessResources>().configureEach {
             "mod_id" to modId,
             "mod_name" to prop("mod_name"),
             "mod_license" to prop("mod_license"),
-            "mod_version" to prop("mod_version"),
+            "mod_version" to envVersion,
             "mod_authors" to prop("mod_authors"),
             "mod_description" to prop("mod_description")
     )
