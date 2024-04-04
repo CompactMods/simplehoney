@@ -1,6 +1,6 @@
 # REQUIRES DATAGEN TO BE CALLED IN A JOB BEFORE THIS!!
 
-name: Release Variables
+name: Publish
 
 on:
   workflow_call:

@@ -57,3 +57,14 @@ jobs:
         run: ./gradlew neoVersion -q >> "$GITHUB_OUTPUT"
         env: 
           VERSION: ${{ steps.version.outputs.version }}
+
+  output:
+    name: Output
+    needs: [ vars ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Output
+        run: |
+          echo "Minecraft = ${{ needs.vars.outputs.mcVersion }}"
+          echo "Mod = ${{ needs.vars.outputs.modVersion }}"
+          echo "NeoForge = ${{ needs.vars.outputs.neoVersion }}"
