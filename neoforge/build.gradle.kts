@@ -31,8 +31,6 @@ java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(21))
 }
 
-jarJar.enable()
-
 sourceSets.main {
     java {
         srcDir("src/main/java")
@@ -198,21 +196,10 @@ tasks.withType<ProcessResources>().configureEach {
     }
 }
 
-tasks.jar {
-    archiveClassifier.set("slim")
-    from(sourceSets.main.get().output)
-}
-
-tasks.jarJar {
-    archiveClassifier.set("")
-    from(sourceSets.main.get().output)
-}
-
 val PACKAGES_URL = System.getenv("GH_PKG_URL") ?: "https://maven.pkg.github.com/compactmods/simplehoney"
 publishing {
     publications.register<MavenPublication>("simplehoney") {
         artifactId = "$modId-neoforge"
-        this.artifact(tasks.jarJar)
         from(components.getByName("java"))
     }
 
