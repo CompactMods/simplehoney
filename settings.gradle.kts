@@ -3,8 +3,8 @@ dependencyResolutionManagement {
         library("neoforge", "net.neoforged", "neoforge")
                 .versionRef("neoforge")
 
-        version("minecraft", "1.20.4")
-        version("neoforge", "20.4.216")
+        version("minecraft", "1.20.6")
+        version("neoforge", "20.6.57-beta")
     }
 
     versionCatalogs.create("mods") {

@@ -17,7 +17,7 @@ plugins {
     id("eclipse")
     id("maven-publish")
     id("java-library")
-    id("net.neoforged.gradle.userdev") version ("7.0.93")
+    id("net.neoforged.gradle.userdev") version ("7.0.119")
     id("org.ajoberstar.grgit") version ("5.2.1")
 }
 
@@ -28,7 +28,7 @@ base {
 }
 
 java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
 }
 
 jarJar.enable()
@@ -70,7 +70,7 @@ runs {
 
         if (!System.getenv().containsKey("CI")) {
             // JetBrains Runtime Hotswap
-            jvmArgument("-XX:+AllowEnhancedClassRedefinition")
+            // jvmArgument("-XX:+AllowEnhancedClassRedefinition")
         }
 
         modSource(sourceSets.main.get())
@@ -193,7 +193,7 @@ tasks.withType<ProcessResources>().configureEach {
     )
 
     inputs.properties(replaceProperties)
-    filesMatching("META-INF/mods.toml") {
+    filesMatching("META-INF/neoforge.mods.toml") {
         expand(replaceProperties)
     }
 }
