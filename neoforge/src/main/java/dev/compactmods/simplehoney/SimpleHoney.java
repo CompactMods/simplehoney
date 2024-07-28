@@ -52,33 +52,32 @@ public class SimpleHoney {
         ITEMS.register(modEventBus);
         modEventBus.addListener(this::registerCaps);
 
-        NeoForge.EVENT_BUS.addListener(this::debugTickListener);
+        // NeoForge.EVENT_BUS.addListener(this::debugTickListener);
     }
-
-    private void debugTickListener(LevelTickEvent.Pre event) {
-        final var level = event.getLevel();
-
-        if(level.tickRateManager().runsNormally() && level.getGameTime() % 10 == 0) {
-            final var allPlayers = level.players();
-            allPlayers.stream()
-                    .filter(player -> player.isCreative() && player.getMainHandItem().is(HONEY_DROP))
-                    .forEach(this::tickNearbyHives);
-        }
-    }
-
-
-    private void tickNearbyHives(Player player) {
-        final var level = player.level();
-        final var nearbyStates = BlockPos.betweenClosedStream(AABB.ofSize(player.position(), 10, 10, 10));
-        nearbyStates
-                .map(pos -> new Tuple<>(pos, level.getBlockState(pos)))
-                .filter(posAndState -> posAndState.getB().is(Blocks.BEEHIVE) || posAndState.getB().is(Blocks.BEE_NEST))
-                .filter(posAndHive -> posAndHive.getB().getValue(BeehiveBlock.HONEY_LEVEL) < BeehiveBlock.MAX_HONEY_LEVELS)
-                .forEach(posAndHive -> {
-                    var newState = posAndHive.getB().setValue(BeehiveBlock.HONEY_LEVEL, posAndHive.getB().getValue(BeehiveBlock.HONEY_LEVEL) + 1);
-                    level.setBlock(posAndHive.getA(), newState, BeehiveBlock.UPDATE_ALL);
-                });
-    }
+//
+//    private void debugTickListener(LevelTickEvent.Pre event) {
+//        final var level = event.getLevel();
+//
+//        if(level.tickRateManager().runsNormally() && level.getGameTime() % 10 == 0) {
+//            final var allPlayers = level.players();
+//            allPlayers.stream()
+//                    .filter(player -> player.isCreative() && player.getMainHandItem().is(HONEY_DROP))
+//                    .forEach(this::tickNearbyHives);
+//        }
+//    }
+    
+//    private void tickNearbyHives(Player player) {
+//        final var level = player.level();
+//        final var nearbyStates = BlockPos.betweenClosedStream(AABB.ofSize(player.position(), 10, 10, 10));
+//        nearbyStates
+//                .map(pos -> new Tuple<>(pos, level.getBlockState(pos)))
+//                .filter(posAndState -> posAndState.getB().is(Blocks.BEEHIVE) || posAndState.getB().is(Blocks.BEE_NEST))
+//                .filter(posAndHive -> posAndHive.getB().getValue(BeehiveBlock.HONEY_LEVEL) < BeehiveBlock.MAX_HONEY_LEVELS)
+//                .forEach(posAndHive -> {
+//                    var newState = posAndHive.getB().setValue(BeehiveBlock.HONEY_LEVEL, posAndHive.getB().getValue(BeehiveBlock.HONEY_LEVEL) + 1);
+//                    level.setBlock(posAndHive.getA(), newState, BeehiveBlock.UPDATE_ALL);
+//                });
+//    }
 
     private void registerCaps(final RegisterCapabilitiesEvent event) {
         event.registerBlock(Capabilities.ItemHandler.BLOCK, this::honeyCap, Blocks.BEEHIVE, Blocks.BEE_NEST);
