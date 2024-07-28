@@ -1,7 +1,5 @@
 @file:Suppress("SpellCheckingInspection")
 
-import net.neoforged.gradle.dsl.common.runs.run.Run
-import org.ajoberstar.grgit.Grgit
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -18,7 +16,6 @@ plugins {
     id("maven-publish")
     id("java-library")
     id("net.neoforged.gradle.userdev") version ("7.0.119")
-    id("org.ajoberstar.grgit") version ("5.2.1")
 }
 
 base {
@@ -126,14 +123,7 @@ repositories {
 }
 
 dependencies {
-    // Core Projects and Libraries
-    this {
-        implementation(libraries.neoforge)
-    }
-
-    // Mods
-    compileOnly(mods.bundles.jei)
-    compileOnly(mods.jade)
+    implementation(libraries.neoforge)
 }
 
 tasks.withType<ProcessResources> {
@@ -145,15 +135,16 @@ tasks.withType<JavaCompile> {
 }
 
 tasks.withType<Jar> {
-    val mainGit = Grgit.open {
-        currentDir = project.rootDir
-    }
+    val gitVersion = providers.exec {
+        commandLine("git", "rev-parse", "HEAD")
+    }.standardOutput.asText.get()
 
     this.exclude("dev/compactmods/simplehoney/datagen/**")
 
     manifest {
         val now = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(Date())
-        attributes(mapOf(
+        attributes(
+            mapOf(
                 "Specification-Title" to "Simple Honey",
                 "Specification-Vendor" to "CompactMods",
                 "Specification-Version" to "2",
@@ -163,8 +154,9 @@ tasks.withType<Jar> {
                 "Implementation-Timestamp" to now,
                 "Minecraft-Version" to libraries.versions.minecraft.get(),
                 "NeoForge-Version" to libraries.versions.neoforge.get(),
-                "Main-Commit" to mainGit.head().id
-        ))
+                "Main-Commit" to gitVersion
+            )
+        )
     }
 }
 
@@ -177,17 +169,17 @@ fun prop(name: String): String {
 
 tasks.withType<ProcessResources>().configureEach {
     var replaceProperties: Map<String, Any> = mapOf(
-            "minecraft_version" to libraries.versions.minecraft.get(),
-            "neo_version" to libraries.versions.neoforge.get(),
-            "minecraft_version_range" to prop("minecraft_version_range"),
-            "neo_version_range" to prop("neo_version_range"),
-            "loader_version_range" to prop("loader_version_range"),
-            "mod_id" to modId,
-            "mod_name" to prop("mod_name"),
-            "mod_license" to prop("mod_license"),
-            "mod_version" to envVersion,
-            "mod_authors" to prop("mod_authors"),
-            "mod_description" to prop("mod_description")
+        "minecraft_version" to libraries.versions.minecraft.get(),
+        "neo_version" to libraries.versions.neoforge.get(),
+        "minecraft_version_range" to prop("minecraft_version_range"),
+        "neo_version_range" to prop("neo_version_range"),
+        "loader_version_range" to prop("loader_version_range"),
+        "mod_id" to modId,
+        "mod_name" to prop("mod_name"),
+        "mod_license" to prop("mod_license"),
+        "mod_version" to envVersion,
+        "mod_authors" to prop("mod_authors"),
+        "mod_description" to prop("mod_description")
     )
 
     inputs.properties(replaceProperties)
