@@ -15,6 +15,7 @@ plugins {
     id("eclipse")
     id("maven-publish")
     id("java-library")
+    // alias(neoforged.plugins.moddev)
     id("net.neoforged.gradle.userdev") version ("7.0.119")
 }
 
@@ -123,7 +124,8 @@ repositories {
 }
 
 dependencies {
-    implementation(libraries.neoforge)
+    // implementation(neoforged.neoforge)
+    implementation("net.neoforged", "neoforge", "21.0.143")
 }
 
 tasks.withType<ProcessResources> {
@@ -152,8 +154,8 @@ tasks.withType<Jar> {
                 "Implementation-Version" to envVersion,
                 "Implementation-Vendor" to "CompactMods",
                 "Implementation-Timestamp" to now,
-                "Minecraft-Version" to libraries.versions.minecraft.get(),
-                "NeoForge-Version" to libraries.versions.neoforge.get(),
+                "Minecraft-Version" to mojang.versions.minecraft.get(),
+                "NeoForge-Version" to neoforged.versions.neoforge.get(),
                 "Main-Commit" to gitVersion
             )
         )
@@ -169,8 +171,8 @@ fun prop(name: String): String {
 
 tasks.withType<ProcessResources>().configureEach {
     var replaceProperties: Map<String, Any> = mapOf(
-        "minecraft_version" to libraries.versions.minecraft.get(),
-        "neo_version" to libraries.versions.neoforge.get(),
+        "minecraft_version" to mojang.versions.minecraft.get(),
+        "neo_version" to neoforged.versions.neoforge.get(),
         "minecraft_version_range" to prop("minecraft_version_range"),
         "neo_version_range" to prop("neo_version_range"),
         "loader_version_range" to prop("loader_version_range"),

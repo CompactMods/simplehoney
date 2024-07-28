@@ -52,7 +52,7 @@ public class SimpleHoney {
         ITEMS.register(modEventBus);
         modEventBus.addListener(this::registerCaps);
 
-        // NeoForge.EVENT_BUS.addListener(this::debugTickListener);
+        NeoForge.EVENT_BUS.addListener(this::debugTickListener);
     }
 
     private void debugTickListener(LevelTickEvent.Pre event) {
