@@ -1,31 +1,31 @@
 @file:Suppress("SpellCheckingInspection")
 
+import org.slf4j.event.Level
 import java.text.SimpleDateFormat
 import java.util.*
+
+val modId: String = "simplehoney"
 
 var envVersion: String = System.getenv("VERSION") ?: "9.9.9"
 if (envVersion.startsWith("v"))
     envVersion = envVersion.trimStart('v')
 
-val modId: String = property("mod_id") as String
-val isRelease: Boolean = (System.getenv("RELEASE") ?: "false").equals("true", true)
-
 plugins {
+    java
     id("idea")
     id("eclipse")
     id("maven-publish")
-    id("java-library")
-    // alias(neoforged.plugins.moddev)
-    id("net.neoforged.gradle.userdev") version ("7.0.119")
+    alias(neoforged.plugins.moddev)
 }
 
 base {
-    archivesName.set(modId)
+    archivesName.set("simplehoney")
     group = "dev.compactmods.simplehoney"
     version = envVersion
 }
 
 java {
+    toolchain.vendor.set(JvmVendorSpec.JETBRAINS)
     toolchain.languageVersion.set(JavaLanguageVersion.of(21))
 }
 
@@ -50,56 +50,82 @@ sourceSets.test {
     }
 }
 
-minecraft {
-    modIdentifier.set(modId)
-    // accessTransformers.file(project.file("src/main/resources/META-INF/accesstransformer.cfg"))
-}
+neoForge {
+    version = neoforged.versions.neoforge.get()
 
-runs {
-    // applies to all the run configs below
-    configureEach {
-        // Recommended logging data for a userdev environment
-        systemProperty("forge.logging.markers", "") // 'SCAN,REGISTRIES,REGISTRYDUMP'
+    val mainMod = this.mods.create(modId) {
+        modSourceSets.add(sourceSets.main)
 
-        // Recommended logging level for the console
-        systemProperty("forge.logging.console.level", "debug")
+        if(System.getenv().containsKey("CI")) {
+            modSourceSets.add(sourceSets.test)
+        }
+    }
 
-        if (!System.getenv().containsKey("CI")) {
+    unitTest {
+        enable()
+        testedMod = mods.named(modId)
+    }
+
+    parchment {
+        enabled = true
+        mappingsVersion = libs.versions.parchment
+        minecraftVersion = libs.versions.parchmentMC
+    }
+
+    runs {
+        // applies to all the run configs below
+        configureEach {
+            logLevel.set(Level.DEBUG)
+            sourceSet = project.sourceSets.main
+
             // JetBrains Runtime Hotswap
-            // jvmArgument("-XX:+AllowEnhancedClassRedefinition")
+            if (!System.getenv().containsKey("CI")) {
+                jvmArgument("-XX:+AllowEnhancedClassRedefinition")
+            }
+
+            systemProperties.put("terminal.ansi", "true")
         }
 
-        modSource(sourceSets.main.get())
-    }
+        create("client") {
+            client()
+            gameDirectory.set(file("runs/client"))
 
-    create("client") {
-        // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
-        systemProperty("forge.enabledGameTestNamespaces", modId)
+            // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
+            systemProperty("forge.enabledGameTestNamespaces", modId)
 
-        programArguments("--username", "Nano")
-        programArguments("--width", "1920")
-        programArguments("--height", "1080")
-    }
+            programArguments.addAll("--username", "Nano")
+            programArguments.addAll("--width", "1920")
+            programArguments.addAll("--height", "1080")
+        }
 
-    create("server") {
-        systemProperty("forge.enabledGameTestNamespaces", modId)
-        environmentVariables("TEST_RESOURCES", project.file("src/test/resources").path)
-        modSource(project.sourceSets.test.get())
-    }
+        create("client2") {
+            client()
+            gameDirectory.set(file("runs/client"))
 
-    create("data") {
-        dataGenerator(true)
+            // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
+            systemProperty("forge.enabledGameTestNamespaces", modId)
 
-        programArguments("--mod", modId)
-        programArguments("--all")
-        programArguments("--output", file("src/generated/resources").absolutePath)
-        programArguments("--existing", file("src/main/resources").absolutePath)
-    }
+            programArguments.addAll("--username", "Nano2")
+            programArguments.addAll("--width", "1920")
+            programArguments.addAll("--height", "1080")
+        }
 
-    create("gameTestServer") {
-        systemProperty("forge.enabledGameTestNamespaces", modId)
-        environmentVariable("TEST_RESOURCES", file("src/test/resources").path)
-        modSource(project.sourceSets.test.get())
+        this.create("data") {
+            this.data()
+
+            this.gameDirectory.set(file("runs/data"))
+
+            programArguments.addAll("--mod", modId)
+            programArguments.addAll("--all")
+            programArguments.addAll("--output", file("src/generated/resources").absolutePath)
+            programArguments.addAll("--existing", file("src/main/resources").absolutePath)
+        }
+
+        create("server") {
+            server()
+            gameDirectory.set(file("runs/server"))
+            programArgument("nogui")
+        }
     }
 }
 
@@ -124,8 +150,7 @@ repositories {
 }
 
 dependencies {
-    // implementation(neoforged.neoforge)
-    implementation("net.neoforged", "neoforge", "21.0.143")
+
 }
 
 tasks.withType<ProcessResources> {

@@ -1,35 +1,8 @@
 dependencyResolutionManagement {
-
-    versionCatalogs.create("neoforged") {
-        version("mdg", "1.0.14")
-        version("neoforge", "21.0.143")
-        version("neogradle", "7.0.157")
-
-        version("neoforgeRange") {
-            require("[21.0,22)")
-            prefer("21.0.143")
-        }
-
-        plugin("moddev", "net.neoforged.gradle.userdev")
-            .versionRef("neogradle")
-
-//        plugin("moddev", "net.neoforged.moddev")
-//            .versionRef("mdg")
-
-        library("neoforged", "net.neoforged", "neoforge")
-            .versionRef("neoforge")
-
-        library("testframework", "net.neoforged", "testframework")
-            .versionRef("neoforge")
-    }
-
-    versionCatalogs.create("mojang") {
-        version("minecraft", "1.21.0")
-        version("minecraftRange") {
-            this.require("[1.21, 1.21.1)")
-            this.prefer("1.21")
-        }
-    }
+    addVersionCatalog(this, "neoforged")
+    addVersionCatalog(this, "mojang")
+//    addVersionCatalog(this, "compactmods")
+//    addVersionCatalog(this, "mods")
 }
 
 pluginManagement {
@@ -67,3 +40,8 @@ plugins {
 
 include("neoforge")
 
+fun addVersionCatalog(dependencyResolutionManagement: DependencyResolutionManagement, name: String) {
+    dependencyResolutionManagement.versionCatalogs.create(name) {
+        from(files("./gradle/$name.versions.toml"))
+    }
+}
