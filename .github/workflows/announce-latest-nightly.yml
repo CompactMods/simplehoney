@@ -85,13 +85,19 @@ jobs:
         id: info
         run: echo "latestJson=$(cat simplehoney-nightly.json)" >> $GITHUB_OUTPUT
 
+      - name: Announce Timestamp
+        id: timestamp
+        run: echo "buildTimestamp=$(date --iso-8601)" >> $GITHUB_OUTPUT
+
       - name: Announce Release
-        uses: compactmods/discord-releaser@0.1.5
-        env:
-          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+        uses: tsickert/discord-webhook@v6.0.0
         with:
-          filename: ${{ fromJson(steps.info.outputs.latestJson)[0].name}}
-          channel: ${{ secrets.NIGHTLY_CHANNEL_ID }}
-          modName: Simple Honey
-          modVersion: ${{ needs.get-package-info.outputs.version }}
-          mcVersion: ${{ needs.vars.outputs.mcVersion }}
+          webhook-url: ${{ secrets.DISCORD_NIGHTLY_WEBHOOK }}
+          avatar-url: "https://compactmods.dev/personal-shrinking-device.png"
+          content: "**New Version Available: Simple Honey v${{ needs.get-package-info.outputs.version }}"
+          filename: ${{ fromJson(steps.info.outputs.latestJson)[0].name }}
+          embed-title: "**Mod File Information**"
+          embed-description: "Filename: ${{ fromJson(steps.info.outputs.latestJson)[0].name}}"
+          embed-url: "https://www.curseforge.com/minecraft/mc-mods/simple-honey"
+          embed-thumbnail-url: "https://media.forgecdn.net/avatars/thumbnails/973/13/64/64/638475522072947924.png"
+          embed-timestamp: ${{ steps.timestamp.outputs.buildTimestamp }}
