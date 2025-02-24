@@ -3,6 +3,9 @@ package dev.compactmods.simplehoney;
 import cpw.mods.modlauncher.Environment;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodProperties;
@@ -43,10 +46,14 @@ public class SimpleHoney {
             .saturationModifier(0.1f)
             .build();
 
-    public static final Item.Properties HONEY_DROP_ITEM_PROPS = new Item.Properties()
-            .food(HONEY_DROP_FOOD_PROPS);
+    public static ResourceLocation HONEY_RL = ResourceLocation.fromNamespaceAndPath(MOD_ID, "honey_drop");
 
-    public static final DeferredItem<Item> HONEY_DROP = ITEMS.register("honey_drop", () -> new Item(HONEY_DROP_ITEM_PROPS));
+    public static final Item.Properties HONEY_DROP_ITEM_PROPS = new Item.Properties()
+            .food(HONEY_DROP_FOOD_PROPS)
+            .setId(ResourceKey.create(BuiltInRegistries.ITEM.key(), HONEY_RL));
+
+    public static final DeferredItem<Item> HONEY_DROP = ITEMS
+            .register("honey_drop", () -> new Item(HONEY_DROP_ITEM_PROPS));
 
     public SimpleHoney(IEventBus modEventBus) {
         ITEMS.register(modEventBus);

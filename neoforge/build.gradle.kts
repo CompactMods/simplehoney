@@ -111,7 +111,7 @@ neoForge {
         }
 
         this.create("data") {
-            this.data()
+            this.clientData()
 
             this.gameDirectory.set(file("runs/data"))
 
