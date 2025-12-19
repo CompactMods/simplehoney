@@ -1,13 +1,18 @@
 package dev.compactmods.simplehoney;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BeehiveBlock;
 import net.minecraft.world.level.block.Blocks;
-import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.TransferPreconditions;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 
-public class HiveItemHandler implements IItemHandler {
+import javax.annotation.ParametersAreNonnullByDefault;
+
+@ParametersAreNonnullByDefault
+public class HiveItemHandler implements ResourceHandler<ItemResource> {
 
     private final Level level;
     private final BlockPos blockPos;
@@ -27,43 +32,46 @@ public class HiveItemHandler implements IItemHandler {
     }
 
     @Override
-    public int getSlotLimit(int slot) {
-        return slot == 0 ? 1 : 0;
-    }
-
-    @Override
-    public boolean isItemValid(int slot, ItemStack stack) {
-        return false;
-    }
-
-    @Override
-    public int getSlots() {
+    public int size() {
         return 1;
     }
 
     @Override
-    public ItemStack getStackInSlot(int slot) {
-        if(slot != 0) return ItemStack.EMPTY;
-        return readyToExtract() ? new ItemStack(SimpleHoney.HONEY_DROP.get()) : ItemStack.EMPTY;
+    public ItemResource getResource(int slot) {
+        TransferPreconditions.checkNonNegative(slot);
+        if(slot != 0) return ItemResource.EMPTY;
+        return ItemResource.of(SimpleHoney.HONEY_DROP.get());
     }
 
     @Override
-    public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-        return stack;
+    public long getAmountAsLong(int i) {
+        return i == 0 && readyToExtract() ? 1 : 0;
     }
 
     @Override
-    public ItemStack extractItem(int slot, int amount, boolean simulate) {
-        if(slot != 0 || amount == 0) return ItemStack.EMPTY;
+    public long getCapacityAsLong(int i, ItemResource resource) {
+        return 0;
+    }
 
-        if(!readyToExtract()) return ItemStack.EMPTY;
+    @Override
+    public boolean isValid(int i, ItemResource resource) {
+        return false;
+    }
 
-        final var drop = new ItemStack(SimpleHoney.HONEY_DROP.get());
-        if(simulate) {
-            return drop;
-        }
+    @Override
+    public int insert(int i, ItemResource resource, int i1, TransactionContext ctx) {
+        return 0;
+    }
+
+    @Override
+    public int extract(int slot, ItemResource resource, int i1, TransactionContext ctx) {
+        if(slot != 0)
+            return 0;
+
+        if(!readyToExtract())
+            return 0;
 
         level.setBlockAndUpdate(blockPos, level.getBlockState(blockPos).setValue(BeehiveBlock.HONEY_LEVEL, 0));
-        return drop;
+        return 1;
     }
 }

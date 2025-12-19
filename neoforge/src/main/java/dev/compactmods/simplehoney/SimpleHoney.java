@@ -1,6 +1,5 @@
 package dev.compactmods.simplehoney;
 
-import cpw.mods.modlauncher.Environment;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -10,29 +9,22 @@ import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BeehiveBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.FurnaceBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.neoforged.bus.EventBus;
-import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
-import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import org.jetbrains.annotations.NotNull;
 
 @Mod(SimpleHoney.MOD_ID)
 public class SimpleHoney {
@@ -59,7 +51,7 @@ public class SimpleHoney {
         ITEMS.register(modEventBus);
         modEventBus.addListener(this::registerCaps);
 
-        if(!FMLEnvironment.production) {
+        if(!FMLEnvironment.isProduction()) {
             NeoForge.EVENT_BUS.addListener(this::debugTickListener);
         }
     }
@@ -89,11 +81,11 @@ public class SimpleHoney {
     }
 
     private void registerCaps(final RegisterCapabilitiesEvent event) {
-        event.registerBlock(Capabilities.ItemHandler.BLOCK, this::honeyCap, Blocks.BEEHIVE, Blocks.BEE_NEST);
+        event.registerBlock(Capabilities.Item.BLOCK, this::honeyCap, Blocks.BEEHIVE, Blocks.BEE_NEST);
         // event.registerItem(Capabilities.FluidHandler.ITEM, (stack, ctx) -> new FluidHandlerItemStack.Consumable(stack, 250), HONEY_DROP);
     }
 
-    private IItemHandler honeyCap(Level level, BlockPos blockPos, BlockState blockState, BlockEntity blockEntity, Direction direction) {
+    private HiveItemHandler honeyCap(Level level, BlockPos blockPos, BlockState blockState, BlockEntity blockEntity, Direction direction) {
         if(direction == null || direction.getAxis().isHorizontal())
             return null;
 
