@@ -4,10 +4,10 @@ on: [workflow_dispatch, workflow_call]
 jobs:
   release-cf:
     name: Make Curseforge Release
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Grab JAR and Info
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: release
           path: .
