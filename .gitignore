@@ -25,3 +25,7 @@ run-data
 
 repo
 neoforge/src/generated/
+
+.DS_Store
+
+src/generated/
