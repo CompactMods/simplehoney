@@ -9,10 +9,11 @@ pluginManagement {
     }
 }
 
-
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version ("1.0.0")
 }
+
+include(":neoforge")
 
 fun addVersionCatalog(dependencyResolutionManagement: DependencyResolutionManagement, name: String) {
     dependencyResolutionManagement.versionCatalogs.create(name) {

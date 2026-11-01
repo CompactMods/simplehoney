@@ -1,0 +1,68 @@
+name: Download Latest Package Info
+
+on:
+  workflow_call:
+  workflow_dispatch:
+    inputs:
+      diagnostic_mode:
+        description: Diagnostic Mode
+        type: boolean
+        default: false
+        required: true
+
+jobs:
+  get-package-info:
+    name: Get Latest Package Info
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Setup Groovy
+        uses: wtfjoke/setup-groovy@v2
+        with:
+          groovy-version: '4.x'
+
+      - name: Download Package Info
+        id: download-info
+        uses: compactmods/dl-package-info@1.0.3
+        env:
+          GQL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          owner: compactmods
+          repo: simplehoney
+          group: dev.compactmods.simplehoney
+          filter: "^simplehoney-neoforge-(?:[\\d\\.]+).jar$"
+          outputFile: simplehoney.json
+
+      - name: Debug output
+        run: |
+          echo "Version: ${{ steps.download-info.outputs.version }}"
+          cat simplehoney.json
+
+      - run: mkdir release
+
+      - name: Version JSON
+        run: |
+          echo '{ "version": "'${{ steps.download-info.outputs.version }}'" }' > release/version-info.json
+
+      - name: Read info into variable [latest]
+        id: info
+        run: echo "latestJson=$(cat simplehoney.json)" >> $GITHUB_OUTPUT
+
+      - name: Download JAR and prepare artifacts
+        run: |
+          curl -L "${{ fromJson(steps.info.outputs.latestJson)[0].url }}" -o "release/${{ fromJson(steps.info.outputs.latestJson)[0].name }}"
+          mv simplehoney.json release/simplehoney.json     
+
+      - name: Add Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release
+          path: release

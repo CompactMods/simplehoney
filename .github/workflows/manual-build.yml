@@ -1,0 +1,97 @@
+name: Manual Build
+
+env:
+  GH_PKG_URL: "https://maven.pkg.github.com/${{ github.repository }}"
+
+permissions:
+  contents: write # For creating and pushing the tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        required: true
+        type: string
+        default: 'v8.0.0'
+      run_tests:
+        required: true
+        type: boolean
+        default: 'true'
+      add_version_tag:
+        required: true
+        type: boolean
+        default: 'false'
+      release_packages:
+        required: true
+        type: boolean
+        default: 'false'
+      announce:
+        required: true
+        type: boolean
+        default: 'false'
+      release_cf:
+        required: true
+        type: boolean
+        default: 'false'
+
+jobs:
+  datagen:
+    uses: ./.github/workflows/_datagen.yml
+    secrets: inherit
+    with:
+      version: ${{ inputs.version }}
+
+  tests:
+    if: ${{ inputs.run_tests }}
+    needs: [ datagen ]
+    uses: ./.github/workflows/_run-gametests.yml
+    secrets: inherit
+    with:
+      version: ${{ inputs.version }}
+
+  build:
+    name: JAR
+    needs: [ tests ]
+    uses: ./.github/workflows/_make-release-jar.yml
+    secrets: inherit
+    with:
+      version: ${{ inputs.version }}
+
+  publish:
+    if: ${{ inputs.release_packages }}
+    needs: [ tests ]
+    uses: ./.github/workflows/_publish.yml
+    secrets: inherit
+    with:
+      version: ${{ inputs.version }}
+
+  create-tag:
+    if: ${{ inputs.add_version_tag }}
+    name: Create tag
+    needs: [ publish ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create tag
+        uses: actions/github-script@v8
+        with:
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/releases/v${{ inputs.version }}',
+              sha: context.sha
+            })
+
+  announce:
+    if: ${{ inputs.announce }}
+    name: Discord Announcement
+    needs: [ publish ]
+    uses: ./.github/workflows/_announce-latest-build.yml
+    secrets: inherit
+
+  release-cf:
+    if: ${{ inputs.release_cf }}
+    name: Release Alpha on CurseForge
+    needs: [ publish ]
+    uses: ./.github/workflows/_release-cf-alpha.yml
+    secrets: inherit

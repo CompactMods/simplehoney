@@ -19,7 +19,7 @@ build
 
 # other
 eclipse
-run
+neoforge/run
 runs
 run-data
 
@@ -28,4 +28,4 @@ neoforge/src/generated/
 
 .DS_Store
 
-src/generated/
+neoforge/src/generated/

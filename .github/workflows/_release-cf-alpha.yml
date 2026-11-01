@@ -1,0 +1,27 @@
+name: Release Latest Build to CurseForge as Alpha
+
+on: [workflow_dispatch, workflow_call]
+jobs:
+  release-cf:
+    name: Make Curseforge Release
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Grab JAR and Info
+        uses: actions/download-artifact@v5
+        with:
+          name: release
+          path: .
+
+      - name: Read info into variable [latest]
+        id: info
+        run: echo "latestJson=$(cat simplehoney.json)" >> $GITHUB_OUTPUT
+
+      - name: Create CurseForge Release
+        uses: itsmeow/curseforge-upload@master
+        with:
+          token: ${{ secrets.CURSEFORGE_TOKEN }}
+          project_id: ${{ secrets.CF_PROJECT }}
+          game_endpoint: minecraft
+          file_path: ${{ fromJson(steps.info.outputs.latestJson)[0].name}}
+          game_versions: java:Java 21,NeoForge
+          release_type: alpha
