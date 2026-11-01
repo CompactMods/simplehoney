@@ -37,12 +37,6 @@ jobs:
             name: generated-data
             path: neoforge/src/generated/resources
 
-        - name: Pull Compilation Data (Core)
-          uses: actions/download-artifact@v4
-          with:
-            name: build-core
-            path: core-api/build
-
         - name: Pull Compilation Data (Main)
           uses: actions/download-artifact@v4
           with:
