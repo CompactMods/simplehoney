@@ -46,7 +46,7 @@ jobs:
 #      version: ${{ needs.vars.outputs.version }}
 
   publish:
-    needs: [vars]
+    needs: [vars, datagen]
     uses: ./.github/workflows/_publish.yml
     secrets: inherit
     with:
